@@ -1,0 +1,6 @@
+id,nombre,email,edad
+1,  Carlos  ,carlos@mail.com, 28
+2,Ana,ana@mail.com,30
+3,Pedro,pedro@mail.com,no-edad
+4,  Andrea  ,andrea@mail.com, 25
+5,Ana Lucia,,22
