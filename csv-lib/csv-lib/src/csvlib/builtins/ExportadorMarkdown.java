@@ -25,7 +25,7 @@ public class ExportadorMarkdown implements ExportadorTabla {
         // Encabezado
         sb.append("| ");
         for (int i = 0; i < encabezados.size(); i++) {
-            sb.append(encabezados.get(i));
+            sb.append(escapar(encabezados.get(i)));
             sb.append(i < encabezados.size() - 1 ? " | " : " |\n");
         }
         // Separador
@@ -40,10 +40,22 @@ public class ExportadorMarkdown implements ExportadorTabla {
             sb.append("| ");
             for (int i = 0; i < encabezados.size(); i++) {
                 String v = i < celdas.size() ? celdas.get(i) : "";
-                sb.append(v);
+                sb.append(escapar(v));
                 sb.append(i < encabezados.size() - 1 ? " | " : " |\n");
             }
         }
         return sb.toString();
+    }
+
+    /**
+     * Escapa el carácter pipe para no romper la estructura de la tabla
+     * Markdown. También reemplaza los saltos de línea por &lt;br&gt; para
+     * mantener cada fila en una sola línea.
+     */
+    private String escapar(String s) {
+        if (s == null) return "";
+        return s.replace("|", "\\|")
+                .replace("\n", "<br>")
+                .replace("\r", "");
     }
 }

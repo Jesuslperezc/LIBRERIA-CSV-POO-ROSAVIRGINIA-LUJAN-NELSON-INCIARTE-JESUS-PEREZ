@@ -15,10 +15,46 @@ import java.util.Objects;
 public final class Fila {
 
     private final List<String> celdas;
+    private final boolean soloLectura;
 
     public Fila(List<String> celdas) {
         Objects.requireNonNull(celdas, "Las celdas no pueden ser null.");
         this.celdas = new ArrayList<>(celdas);
+        this.soloLectura = false;
+    }
+
+    /**
+     * Constructor interno para construir una vista de solo lectura: la lista
+     * que se pasa se envuelve con {@link Collections#unmodifiableList(List)},
+     * de modo que cualquier intento de mutación
+     * ({@link #setCelda}, {@link #insertarCelda}, {@link #agregarCelda},
+     * {@link #quitarCelda}) lanza {@link UnsupportedOperationException}.
+     *
+     * <p>Lo usa {@link TablaCSV#getFila(int)} para no exponer la fila interna
+     * mutable, manteniendo la API existente ({@code getCelda},
+     * {@code getCeldas}, {@code tamanio}, {@code copiar}, {@code equals},
+     * {@code toString}).</p>
+     */
+    private Fila(List<String> celdas, boolean soloLectura) {
+        this.celdas = soloLectura
+            ? Collections.unmodifiableList(celdas)
+            : new ArrayList<>(celdas);
+        this.soloLectura = soloLectura;
+    }
+
+    /**
+     * Devuelve una vista de solo lectura de la fila indicada: comparte los
+     * datos con {@code original}, pero cualquier intento de mutación lanza
+     * {@link UnsupportedOperationException}.
+     */
+    static Fila vistaSoloLectura(Fila original) {
+        Objects.requireNonNull(original, "La fila original no puede ser null.");
+        return new Fila(original.celdas, true);
+    }
+
+    /** Indica si esta fila es una vista de solo lectura. */
+    public boolean esSoloLectura() {
+        return soloLectura;
     }
 
     /** Devuelve una vista inmutable de las celdas. */

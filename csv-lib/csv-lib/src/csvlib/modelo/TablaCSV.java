@@ -122,8 +122,22 @@ public final class TablaCSV {
         return filas.size();
     }
 
+    /**
+     * Devuelve una <b>vista de solo lectura</b> de la fila en la posición
+     * indicada. La vista comparte los datos con la fila interna, pero
+     * cualquier intento de mutarla ({@code setCelda}, {@code insertarCelda},
+     * {@code agregarCelda}, {@code quitarCelda}) lanza
+     * {@link UnsupportedOperationException}. Esto evita que el cliente modifique
+     * celdas sin pasar por la tabla.
+     *
+     * <p>Para obtener una fila modificable de forma segura, usar
+     * {@link #copiar()} y luego operar sobre la copia.</p>
+     */
     public Fila getFila(int indice) {
-        return filas.get(indice);
+        if (indice < 0 || indice >= filas.size()) {
+            throw new IndexOutOfBoundsException("Índice de fila inválido: " + indice);
+        }
+        return Fila.vistaSoloLectura(filas.get(indice));
     }
 
     /** Agrega una fila al final de la tabla. */
@@ -171,12 +185,24 @@ public final class TablaCSV {
 
     // ------------------------ Celdas ------------------------
 
+    /**
+     * Acceso interno a la fila mutable subyacente (sin envolver en vista de
+     * solo lectura). Usado por las operaciones de la propia tabla que sí
+     * necesitan mutar la fila.
+     */
+    private Fila filaInterna(int indiceFila) {
+        if (indiceFila < 0 || indiceFila >= filas.size()) {
+            throw new IndexOutOfBoundsException("Índice de fila inválido: " + indiceFila);
+        }
+        return filas.get(indiceFila);
+    }
+
     public String getCelda(int indiceFila, String nombreColumna) {
-        return getFila(indiceFila).getCelda(indiceColumna(nombreColumna));
+        return filaInterna(indiceFila).getCelda(indiceColumna(nombreColumna));
     }
 
     public TablaCSV setCelda(int indiceFila, String nombreColumna, String valor) {
-        getFila(indiceFila).setCelda(indiceColumna(nombreColumna), valor);
+        filaInterna(indiceFila).setCelda(indiceColumna(nombreColumna), valor);
         return this;
     }
 
@@ -185,7 +211,7 @@ public final class TablaCSV {
      * Útil para que las extensiones operen por nombre sin manejar índices.
      */
     public Map<String, String> filaComoMapa(int indiceFila) {
-        Fila fila = getFila(indiceFila);
+        Fila fila = filaInterna(indiceFila);
         Map<String, String> mapa = new LinkedHashMap<>();
         for (int i = 0; i < encabezados.size() && i < fila.tamanio(); i++) {
             mapa.put(encabezados.get(i), fila.getCelda(i));

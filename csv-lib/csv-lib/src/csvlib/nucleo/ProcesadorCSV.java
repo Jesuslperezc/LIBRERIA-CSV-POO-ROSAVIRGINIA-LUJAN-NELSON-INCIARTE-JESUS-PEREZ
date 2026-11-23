@@ -8,23 +8,33 @@ import java.util.Objects;
 
 /**
  * Fachada de alto nivel (patrón Facade) que combina un {@link LectorCSV}, un
- * {@link ImpresorTabla} y una {@link Tuberia} para ofrecer las cuatro
- * funciones básicas del enunciado:
+ * {@link ImpresorTabla} y un {@link ProcesamientoTuberia} para ofrecer las
+ * cuatro funciones básicas del enunciado:
  *
  * <ol>
- *   <li>Obtener el archivo CSV y crear un objeto que lo represente
- *       ({@link #cargar}).</li>
- *   <li>Permitir quitar o agregar filas o columnas (delegado a
- *       {@link TablaCSV}).</li>
- *   <li>Imprimir en pantalla la tabla ({@link #imprimir}).</li>
- *   <li>Permitir extender sus capacidades o modificar el resultado final
- *       mediante código propio (delegado a la {@link Tuberia}).</li>
+ *   <li><b>Función 1 — Obtener el archivo CSV y crear un objeto que lo
+ *       represente</b>: {@link #cargar}.</li>
+ *   <li><b>Función 2 — Permitir quitar o agregar filas o columnas</b>: esta
+ *       función no se reimplementa aquí; es responsabilidad de la propia
+ *       {@link TablaCSV}, cuyas operaciones {@code agregarFila},
+ *       {@code quitarFila}, {@code agregarColumna} y {@code quitarColumna}
+ *       modelan la estructura. La clase {@code TablaCSV} es {@code final}
+ *       porque las operaciones estructurales son de dominio y no constituyen
+ *       un punto de variabilidad; para modificar el contenido antes o
+ *       después se usa la Tubería (Función 4).</li>
+ *   <li><b>Función 3 — Imprimir en pantalla la tabla</b>: {@link #imprimir}.</li>
+ *   <li><b>Función 4 — Permitir extender sus capacidades o modificar el
+ *       resultado final mediante código propio</b>: {@link #procesar} (aplica
+ *       los validadores, filtros y transformadores registrados en la
+ *       Tubería) y {@link #exportar} (cambia el formato de salida).</li>
  * </ol>
  *
  * <p><b>DIP:</b> todas las dependencias son abstracciones inyectadas por
- * constructor. Se ofrece un constructor de conveniencia que cablea las
- * implementaciones por defecto, de modo que un uso sencillo no requiere
- * ensamblar nada, pero un uso avanzado puede inyectar las suyas.</p>
+ * constructor: {@link LectorCSV}, {@link ImpresorTabla} y
+ * {@link ProcesamientoTuberia} (no la clase concreta {@link Tuberia}). Se
+ * ofrece un constructor de conveniencia que cablea las implementaciones por
+ * defecto, de modo que un uso sencillo no requiere ensamblar nada, pero un
+ * uso avanzado puede inyectar las suyas.</p>
  *
  * <p><b>SRP:</b> el procesador solo coordina; la lectura, impresión y
  * procesamiento recaen en sus colaboradores.</p>
@@ -33,13 +43,13 @@ public final class ProcesadorCSV {
 
     private final LectorCSV lector;
     private final ImpresorTabla impresor;
-    private final Tuberia tuberia;
+    private final ProcesamientoTuberia tuberia;
 
     /** Constructor con dependencias inyectadas explícitamente. */
-    public ProcesadorCSV(LectorCSV lector, ImpresorTabla impresor, Tuberia tuberia) {
+    public ProcesadorCSV(LectorCSV lector, ImpresorTabla impresor, ProcesamientoTuberia tuberia) {
         this.lector = Objects.requireNonNull(lector, "LectorCSV no puede ser null.");
         this.impresor = Objects.requireNonNull(impresor, "ImpresorTabla no puede ser null.");
-        this.tuberia = Objects.requireNonNull(tuberia, "Tuberia no puede ser null.");
+        this.tuberia = Objects.requireNonNull(tuberia, "ProcesamientoTuberia no puede ser null.");
     }
 
     /**
@@ -64,21 +74,25 @@ public final class ProcesadorCSV {
         return lector.leer(ruta);
     }
 
-    // ----------------------- Función 2 ----------------------
-
-    /**
-     * Devuelve la tabla procesada por la Tuberia (validadores + filtros +
-     * transformadores). La tabla original no se modifica.
-     */
-    public TablaCSV procesar(TablaCSV tabla) {
-        return tuberia.procesar(tabla);
-    }
-
     // ----------------------- Función 3 ----------------------
 
     /** Imprime la tabla usando el {@link ImpresorTabla} configurado. */
     public void imprimir(TablaCSV tabla) {
         impresor.imprimir(tabla);
+    }
+
+    // ----------------------- Función 4 ----------------------
+
+    /**
+     * Devuelve la tabla procesada por la Tuberia (validadores + filtros +
+     * transformadores). La tabla original no se modifica.
+     *
+     * <p>Corresponde al primer aspecto de la Función 4 del enunciado:
+     * "extender sus capacidades o modificar el resultado final mediante
+     * código propio". El código propio se inyecta al construir la Tuberia.</p>
+     */
+    public TablaCSV procesar(TablaCSV tabla) {
+        return tuberia.procesar(tabla);
     }
 
     /**
@@ -89,15 +103,14 @@ public final class ProcesadorCSV {
         impresor.imprimir(tuberia.procesar(tabla));
     }
 
-    // ----------------------- Función 4 ----------------------
-
     /**
      * Exporta la tabla usando el {@link ExportadorTabla} indicado.
      *
-     * <p>El exportador se recibe como parámetro (no se registra en la Tuberia)
-     * para mantener la separación entre transformación y presentación: un
-     * mismo cliente puede usar varios exportadores sobre la misma tabla sin
-     * reconstruir la Tuberia.</p>
+     * <p>Corresponde al segundo aspecto de la Función 4 del enunciado:
+     * "modificar el resultado final". El exportador se recibe como parámetro
+     * (no se registra en la Tuberia) para mantener la separación entre
+     * transformación y presentación: un mismo cliente puede usar varios
+     * exportadores sobre la misma tabla sin reconstruir la Tuberia.</p>
      */
     public String exportar(TablaCSV tabla, ExportadorTabla exportador) {
         Objects.requireNonNull(exportador, "ExportadorTabla no puede ser null.");
@@ -114,7 +127,7 @@ public final class ProcesadorCSV {
         return impresor;
     }
 
-    public Tuberia getTuberia() {
+    public ProcesamientoTuberia getTuberia() {
         return tuberia;
     }
 }

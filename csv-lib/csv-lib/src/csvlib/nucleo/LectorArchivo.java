@@ -34,10 +34,21 @@ public class LectorArchivo implements LectorCSV {
         this(",");
     }
 
-    /** Crea un lector con el separador indicado (",", ";", "\t", ...). */
+    /**
+     * Crea un lector con el separador indicado (",", ";", "\t", ...).
+     *
+     * @throws IllegalArgumentException si el separador es {@code null}, vacío
+     *         o tiene más de un carácter (la implementación solo divide por
+     *         un único carácter; separadores multicaracter no se soportan).
+     */
     public LectorArchivo(String separador) {
         if (separador == null || separador.isEmpty()) {
             throw new IllegalArgumentException("El separador no puede ser vacío.");
+        }
+        if (separador.length() != 1) {
+            throw new IllegalArgumentException(
+                "El separador debe ser un único carácter; se recibió: \""
+                + separador + "\" (longitud " + separador.length() + ").");
         }
         this.separador = separador;
     }

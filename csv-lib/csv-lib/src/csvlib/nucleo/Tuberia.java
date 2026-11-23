@@ -39,7 +39,7 @@ import java.util.Objects;
  * <p><b>LSP:</b> cualquier implementación de esas interfaces puede sustituir
  * a otra en las listas internas sin romper el contrato.</p>
  */
-public final class Tuberia {
+public final class Tuberia implements ProcesamientoTuberia {
 
     private final List<ValidadorCSV> validadores;
     private final List<FiltroFila> filtros;
@@ -72,6 +72,7 @@ public final class Tuberia {
      *         no se modifica (patrón Prototype aplicado al inicio).
      * @throws ExcepcionValidacion si algún validador falla.
      */
+    @Override
     public TablaCSV procesar(TablaCSV entrada) {
         Objects.requireNonNull(entrada, "La tabla de entrada no puede ser null.");
 
@@ -83,7 +84,11 @@ public final class Tuberia {
         // 2. Filtrado de filas sobre una copia profunda (Prototype).
         TablaCSV trabajo = entrada.copiar();
         List<Fila> conservadas = new ArrayList<>();
-        for (Fila fila : trabajo.getFilas()) {
+        // getFilas() devuelve una lista inmutable de las filas internas (las
+        // propias Filas siguen siendo mutables; lo que no se puede es añadir
+        // o quitar filas a través de esa lista).
+        List<Fila> filasInternas = trabajo.getFilas();
+        for (Fila fila : filasInternas) {
             boolean mantener = true;
             for (FiltroFila f : filtros) {
                 if (!f.mantener(fila, trabajo)) {
@@ -101,9 +106,13 @@ public final class Tuberia {
         }
 
         // 3. Transformaciones de celda (Strategy secuencial).
+        // Se itera de nuevo sobre getFilas() para obtener las filas internas
+        // mutables y poder transformar sus celdas (getFila(int) devuelve una
+        // vista de solo lectura).
         for (TransformadorCelda t : transformadores) {
-            for (int r = 0; r < trabajo.cantidadFilas(); r++) {
-                Fila fila = trabajo.getFila(r);
+            List<Fila> filas = trabajo.getFilas();
+            for (int r = 0; r < filas.size(); r++) {
+                Fila fila = filas.get(r);
                 for (int c = 0; c < fila.tamanio(); c++) {
                     String original = fila.getCelda(c);
                     String transformado = t.transformar(original, r, c, trabajo);

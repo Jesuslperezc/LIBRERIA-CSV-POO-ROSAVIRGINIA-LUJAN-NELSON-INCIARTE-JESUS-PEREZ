@@ -12,6 +12,7 @@ import csvlib.nucleo.ImpresorConsola;
 import csvlib.nucleo.LectorArchivo;
 import csvlib.nucleo.ProcesadorCSV;
 import csvlib.nucleo.Tuberia;
+import csvlib.usuario.FiltroNombreEmpiezaA;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -29,10 +30,13 @@ import java.util.List;
  *       transformadores, exportadores).</li>
  * </ol>
  *
- * <p>Además incluye un ejemplo de <b>extensión propia del usuario</b>: un
- * filtro definido como clase anónima que se queda solo con filas cuyo nombre
- * empiece por 'A'. Esto demuestra que la librería se puede extender sin tocar
- * su código fuente.</p>
+ * <p>Además incluye un ejemplo de <b>extensión propia del usuario</b>: la clase
+ * {@link FiltroNombreEmpiezaA}, que vive en el paquete {@code csvlib.usuario}
+ * (ajeno al núcleo de la librería) e implementa la interfaz pública
+ * {@code FiltroFila}. Esto demuestra que la librería se puede extender sin
+ * tocar su código fuente. La expresión equivalente con una lambda también
+ * sería válida, pero aquí se usa una clase completa para que el ejemplo sea
+ * autocontenido y verificable.</p>
  */
 public final class Principal {
 
@@ -81,14 +85,9 @@ public final class Principal {
             .agregarValidador(new ValidadorNoVacio("nombre"))
             // filtro built-in: solo filas con 'edad' numérica
             .agregarFiltro(new FiltroEdadNumerica("edad"))
-            // FILTRO PROPIO del usuario (clase anónima): nombre empiece por 'A'
-            .agregarFiltro((fila, ctx) -> {
-                int idx = ctx.indiceColumna("nombre");
-                String nombre = idx < fila.tamanio() ? fila.getCelda(idx) : "";
-                return nombre != null
-                    && !nombre.isEmpty()
-                    && nombre.toUpperCase().startsWith("A");
-            })
+            // FILTRO PROPIO del usuario (clase completa en csvlib.usuario):
+            // conserva filas cuyo nombre, tras recortar espacios, empieza por 'A'.
+            .agregarFiltro(new FiltroNombreEmpiezaA("nombre"))
             // transformadores built-in
             .agregarTransformador(new TransformadorRecortarEspacios())
             .agregarTransformador(new TransformadorMayusculas(1)) // solo columna 1 (nombre)

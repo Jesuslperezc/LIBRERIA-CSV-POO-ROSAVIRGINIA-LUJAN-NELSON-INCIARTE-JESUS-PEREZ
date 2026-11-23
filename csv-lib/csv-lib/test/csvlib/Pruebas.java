@@ -16,7 +16,9 @@ import csvlib.modelo.TablaCSV;
 import csvlib.nucleo.ImpresorConsola;
 import csvlib.nucleo.LectorArchivo;
 import csvlib.nucleo.ProcesadorCSV;
+import csvlib.nucleo.ProcesamientoTuberia;
 import csvlib.nucleo.Tuberia;
+import csvlib.usuario.FiltroNombreEmpiezaA;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -539,5 +541,140 @@ public final class Pruebas {
         afirmar(out.startsWith("[\n"), "ExportadorJSON empieza con [");
         afirmar(out.trim().endsWith("]"), "ExportadorJSON termina con ]");
         afirmar(out.contains("\"id\": \"1\""), "ExportadorJSON serializa primer objeto");
+    }
+
+    // ===================== Pruebas de correcciones =====================
+
+    // B1: ExportadorMarkdown debe escapar el carácter pipe en las celdas.
+    public static void probarExportadorMarkdownEscapaPipe() {
+        TablaCSV t = new TablaCSV(List.of("a", "b"));
+        t.agregarFila(List.of("x|y", "z"));
+        String out = new ExportadorMarkdown().exportar(t);
+        afirmar(out.contains("x\\|y"), "ExportadorMarkdown escapa el pipe en celdas");
+        // La fila con el pipe escapado debe tener 3 pipes estructurales
+        // (borde izquierdo, separador entre columnas, borde derecho). El pipe
+        // escapado "\|" también contiene el carácter '|', pero va precedido
+        // de '\' y no añade columnas a la tabla Markdown.
+        String primeraFila = out.split("\n", 3)[2];
+        long pipesEstructurales = 0;
+        for (int i = 0; i < primeraFila.length(); i++) {
+            if (primeraFila.charAt(i) == '|') {
+                // No contar el pipe si está escapado ('\|').
+                if (i > 0 && primeraFila.charAt(i - 1) == '\\') continue;
+                pipesEstructurales++;
+            }
+        }
+        afirmarIgual(3L, pipesEstructurales,
+            "La fila con pipe escapado tiene 3 pipes estructurales (2 bordes + 1 separador)");
+    }
+
+    // B2: LectorArchivo rechaza separadores multicaracter en el constructor.
+    public static void probarLectorRechazaSeparadorMultiCaracter() {
+        afirmarLanza(IllegalArgumentException.class,
+            () -> new LectorArchivo("||"),
+            "LectorArchivo rechaza separador multicaracter '||'");
+        afirmarLanza(IllegalArgumentException.class,
+            () -> new LectorArchivo("ab"),
+            "LectorArchivo rechaza separador multicaracter 'ab'");
+    }
+
+    // B3: TablaCSV.getFila() devuelve una vista de solo lectura.
+    public static void probarGetFilaEsSoloLectura() {
+        TablaCSV t = muestra();
+        Fila vista = t.getFila(0);
+        afirmar(vista.esSoloLectura(), "getFila devuelve una fila de solo lectura");
+        // La lectura sigue funcionando.
+        afirmarIgual("Ana", vista.getCelda(1), "La vista de solo lectura permite leer");
+        // La mutación directa se rechaza.
+        afirmarLanza(UnsupportedOperationException.class,
+            () -> vista.setCelda(0, "999"),
+            "setCelda sobre vista de solo lectura lanza UnsupportedOperationException");
+        afirmarLanza(UnsupportedOperationException.class,
+            () -> vista.agregarCelda("nuevo"),
+            "agregarCelda sobre vista de solo lectura lanza UnsupportedOperationException");
+        // La tabla interna no se modificó.
+        afirmarIgual("1", t.getFila(0).getCelda(0), "La tabla interna conserva su valor original");
+    }
+
+    // B3 (extra): un índice fuera de rango en getFila lanza IndexOutOfBoundsException.
+    public static void probarGetFilaIndiceInvalidoLanza() {
+        TablaCSV t = muestra();
+        afirmarLanza(IndexOutOfBoundsException.class,
+            () -> t.getFila(-1),
+            "getFila(-1) lanza IndexOutOfBoundsException");
+        afirmarLanza(IndexOutOfBoundsException.class,
+            () -> t.getFila(99),
+            "getFila(99) lanza IndexOutOfBoundsException");
+    }
+
+    // B4: ProcesadorCSV depende de la interfaz ProcesamientoTuberia, no de la
+    // clase concreta Tuberia. Lo verificamos sustituyendo Tuberia por una
+    // implementación propia del usuario.
+    public static void probarProcesadorAceptaImplementacionPropiaDeProcesamientoTuberia() {
+        ProcesamientoTuberia custom = new ProcesamientoTuberia() {
+            @Override
+            public TablaCSV procesar(TablaCSV entrada) {
+                // Devuelve la entrada tal cual (sin copiar): solo para verificar
+                // que ProcesadorCSV acepta cualquier implementación de la interfaz.
+                return entrada;
+            }
+        };
+        ProcesadorCSV proc = new ProcesadorCSV(
+            new LectorArchivo(),
+            new ImpresorConsola(),
+            custom);
+        TablaCSV t = new TablaCSV(List.of("a"));
+        t.agregarFila(List.of("1"));
+        TablaCSV out = proc.procesar(t);
+        afirmarIgual(1, out.cantidadFilas(), "ProcesadorCSV usa una implementación propia de ProcesamientoTuberia");
+        // El accesoretorna la interfaz, no la clase concreta.
+        afirmar(proc.getTuberia() instanceof ProcesamientoTuberia,
+            "getTuberia() devuelve ProcesamientoTuberia (interfaz)");
+    }
+
+    // B5 / D5: la extensión propia FiltroNombreEmpiezaA conserva a "  Andrea  "
+    // aunque el filtro se ejecuta ANTES que el TransformadorRecortarEspacios,
+    // porque la propia extensión aplica trim().
+    public static void probarFiltroNombreEmpiezaAConservaConEspacios() {
+        TablaCSV t = new TablaCSV(List.of("id", "nombre"));
+        t.agregarFila(List.of("1", "  Andrea  "));
+        t.agregarFila(List.of("2", "Carlos"));
+        t.agregarFila(List.of("3", "ana")); // minúscula también vale
+        FiltroNombreEmpiezaA filtro = new FiltroNombreEmpiezaA("nombre");
+        afirmar(filtro.mantener(t.getFila(0), t), "Conserva '  Andrea  ' (con espacios y trim)");
+        afirmarFalso(filtro.mantener(t.getFila(1), t), "Descarta 'Carlos'");
+        afirmar(filtro.mantener(t.getFila(2), t), "Conserva 'ana' (case-insensitive)");
+    }
+
+    // B5 / D5 (extra): FiltroNombreEmpiezaA respeta el contrato LSP cuando la
+    // columna no existe (devuelve false en lugar de lanzar).
+    public static void probarFiltroNombreEmpiezaAColumnaInexistenteDevuelveFalse() {
+        TablaCSV t = new TablaCSV(List.of("a"));
+        t.agregarFila(List.of("1"));
+        afirmarFalso(new FiltroNombreEmpiezaA("no-existe").mantener(t.getFila(0), t),
+            "FiltroNombreEmpiezaA devuelve false si la columna no existe");
+    }
+
+    // B5 / D5 (extra): la Tubería con FiltroNombreEmpiezaA + FiltroEdadNumerica
+    // deja a Ana, Ana Lucia y Andrea (todas empiezan por A y tienen edad
+    // numérica) — replica el escenario de la demo.
+    public static void probarTuberiaConFiltroPropioConservaAndrea() {
+        TablaCSV t = new TablaCSV(List.of("id", "nombre", "email", "edad"));
+        t.agregarFila(List.of("1", "  Carlos  ", "c@x.com", "28"));
+        t.agregarFila(List.of("2", "Ana", "a@x.com", "30"));
+        t.agregarFila(List.of("3", "Pedro", "p@x.com", "no-edad"));
+        t.agregarFila(List.of("4", "  Andrea  ", "and@x.com", "25"));
+        t.agregarFila(List.of("5", "Ana Lucia", "", "22"));
+        Tuberia p = Tuberia.crear()
+            .agregarFiltro(new FiltroEdadNumerica("edad"))
+            .agregarFiltro(new FiltroNombreEmpiezaA("nombre"))
+            .agregarTransformador(new TransformadorRecortarEspacios())
+            .agregarTransformador(new TransformadorMayusculas(1))
+            .construir();
+        TablaCSV out = p.procesar(t);
+        afirmarIgual(3, out.cantidadFilas(), "Quedan Ana, Ana Lucia y Andrea");
+        afirmarIgual("ANA", out.getFila(0).getCelda(1), "Primera fila es ANA");
+        afirmarIgual("ANDREA", out.getFila(1).getCelda(1), "Segunda fila es ANDREA");
+        afirmarIgual("ANA LUCIA", out.getFila(2).getCelda(1), "Tercera fila es ANA LUCIA");
     }
 }
