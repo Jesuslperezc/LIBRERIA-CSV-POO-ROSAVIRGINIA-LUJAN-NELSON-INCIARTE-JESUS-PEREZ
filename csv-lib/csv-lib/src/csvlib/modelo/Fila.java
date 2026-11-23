@@ -23,18 +23,6 @@ public final class Fila {
         this.soloLectura = false;
     }
 
-    /**
-     * Constructor interno para construir una vista de solo lectura: la lista
-     * que se pasa se envuelve con {@link Collections#unmodifiableList(List)},
-     * de modo que cualquier intento de mutación
-     * ({@link #setCelda}, {@link #insertarCelda}, {@link #agregarCelda},
-     * {@link #quitarCelda}) lanza {@link UnsupportedOperationException}.
-     *
-     * <p>Lo usa {@link TablaCSV#getFila(int)} para no exponer la fila interna
-     * mutable, manteniendo la API existente ({@code getCelda},
-     * {@code getCeldas}, {@code tamanio}, {@code copiar}, {@code equals},
-     * {@code toString}).</p>
-     */
     private Fila(List<String> celdas, boolean soloLectura) {
         this.celdas = soloLectura
             ? Collections.unmodifiableList(celdas)

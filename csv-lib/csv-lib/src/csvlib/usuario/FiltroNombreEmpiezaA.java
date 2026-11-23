@@ -8,16 +8,7 @@ import csvlib.modelo.TablaCSV;
  * Extensión propia del usuario: filtro que conserva solo las filas cuyo
  * valor en la columna indicada, tras eliminar espacios en blanco al inicio
  * y al final, empieza por una letra determinada (en mayúsculas).
- *
- * <p><b>Este código vive en un paquete ajeno a {@code csvlib}:</b> demuestra
- * que la librería se extiende <i>sin alterar su propio código</i>, tal como
- * pide el enunciado. Solo implementa una interfaz pública
- * ({@link FiltroFila}) y se registra al construir la Tuberia.</p>
- *
- * <p><b>LSP:</b> respeta el contrato de {@link FiltroFila}: devuelve
- * {@code true} para conservar, {@code false} para descartar. Si la columna
- * no existe o la fila es más corta, devuelve {@code false} en lugar de
- * lanzar una excepción inesperada.</p>
+ 
  */
 public final class FiltroNombreEmpiezaA implements FiltroFila {
 

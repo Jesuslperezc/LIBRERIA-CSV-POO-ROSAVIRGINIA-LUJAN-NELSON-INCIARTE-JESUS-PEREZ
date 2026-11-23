@@ -9,11 +9,8 @@ import java.util.List;
 /**
  * Exportador que devuelve la tabla como un array JSON de objetos
  * (clave = encabezado, valor = celda).
- *
- * <p><b>OCP:</b> nueva extensión sin tocar la librería.</p>
- *
- * <p>No usa ninguna librería externa: serializa manualmente escapando los
- * caracteres especiales de JSON.</p>
+
+ * 
  */
 public class ExportadorJSON implements ExportadorTabla {
 

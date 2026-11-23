@@ -7,11 +7,6 @@ import csvlib.modelo.TablaCSV;
 /**
  * Filtro que conserva solo las filas en las que la columna indicada contiene
  * un valor numérico entero válido.
- *
- * <p><b>OCP:</b> nueva extensión sin tocar la librería.</p>
- *
- * <p><b>LSP:</b> respeta el contrato de {@link FiltroFila}: devuelve
- * {@code true} para conservar, {@code false} para descartar.</p>
  */
 public class FiltroEdadNumerica implements FiltroFila {
 

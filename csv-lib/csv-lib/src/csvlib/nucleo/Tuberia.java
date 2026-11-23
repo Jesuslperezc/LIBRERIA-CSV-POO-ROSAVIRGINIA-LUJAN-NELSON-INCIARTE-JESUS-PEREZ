@@ -15,29 +15,6 @@ import java.util.Objects;
  * Orquesta la ejecución ordenada de las extensiones registradas sobre una
  * {@link TablaCSV}.
  *
- * <p>Orden de aplicación (esqueleto fijo, patrón Template Method por
- * composición):</p>
- * <ol>
- *   <li><b>Validadores</b> — lanzan {@link ExcepcionValidacion} si la tabla no
- *       cumple. No modifican la tabla. (Cadena con cortocircuito.)</li>
- *   <li><b>Filtros de fila</b> — producen una nueva tabla sin las filas que no
- *       cumplen los predicados. La tabla original no se muta. (Cadena AND.)</li>
- *   <li><b>Transformadores de celda</b> — aplican cada transformador sobre
- *       cada celda de la tabla filtrada, en el orden de registro.</li>
- * </ol>
- *
- * <p><b>SRP:</b> la Tuberia SOLO coordina; no valida, no filtra, no
- * transforma por sí mismo: delega en las extensiones.</p>
- *
- * <p><b>OCP:</b> nuevos tipos de extensión se incorporan implementando la
- * interfaz correspondiente y registrándola aquí; la Tuberia no cambia.</p>
- *
- * <p><b>DIP:</b> depende exclusivamente de las abstracciones
- * {@link ValidadorCSV}, {@link FiltroFila} y {@link TransformadorCelda}, nunca
- * de clases concretas.</p>
- *
- * <p><b>LSP:</b> cualquier implementación de esas interfaces puede sustituir
- * a otra en las listas internas sin romper el contrato.</p>
  */
 public final class Tuberia implements ProcesamientoTuberia {
 

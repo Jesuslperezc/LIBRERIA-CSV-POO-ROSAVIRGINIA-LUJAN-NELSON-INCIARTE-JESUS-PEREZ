@@ -6,8 +6,6 @@ import csvlib.modelo.TablaCSV;
 /**
  * Transformador que convierte a mayúsculas todas las celdas de las columnas
  * indicadas. Si no se especifica ninguna columna, se aplica a toda la tabla.
- *
- * <p><b>OCP:</b> nueva extensión sin tocar la librería.</p>
  */
 public class TransformadorMayusculas implements TransformadorCelda {
 

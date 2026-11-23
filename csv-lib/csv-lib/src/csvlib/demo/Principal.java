@@ -21,22 +21,14 @@ import java.util.List;
 /**
  * Demostración de uso de la librería.
  *
- * <p>Cubre las cuatro funciones básicas del enunciado:</p>
- * <ol>
- *   <li>Cargar un CSV en un objeto {@link TablaCSV}.</li>
- *   <li>Agregar/quitar filas y columnas.</li>
- *   <li>Imprimir la tabla en pantalla.</li>
- *   <li>Extender capacidades mediante código propio (validadores, filtros,
- *       transformadores, exportadores).</li>
- * </ol>
- *
- * <p>Además incluye un ejemplo de <b>extensión propia del usuario</b>: la clase
- * {@link FiltroNombreEmpiezaA}, que vive en el paquete {@code csvlib.usuario}
- * (ajeno al núcleo de la librería) e implementa la interfaz pública
- * {@code FiltroFila}. Esto demuestra que la librería se puede extender sin
- * tocar su código fuente. La expresión equivalente con una lambda también
- * sería válida, pero aquí se usa una clase completa para que el ejemplo sea
- * autocontenido y verificable.</p>
+ * Cubre las cuatro funciones básicas del enunciado:
+ * 
+ *   Cargar un CSV en un objeto {@link TablaCSV}.
+ *   Agregar/quitar filas y columnas.
+ *   Imprimir la tabla en pantalla.
+ *   Extender capacidades mediante código propio (validadores, filtros,
+ *   transformadores, exportadores).
+ * 
  */
 public final class Principal {
 

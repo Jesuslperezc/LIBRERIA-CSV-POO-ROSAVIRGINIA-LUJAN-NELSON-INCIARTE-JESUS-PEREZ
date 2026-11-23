@@ -32,12 +32,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-/**.
- *
- * <p>Detecta por reflexión todos los métodos estáticos sin parámetros llamados
- * {@code probarXxx} y los ejecuta. Si alguno lanza excepción o una aserción
- * falla, se reporta al final con el conteo de pasadas/fallidas.</p>
- */
+
 public final class Pruebas {
 
     public static void main(String[] args) throws Exception {

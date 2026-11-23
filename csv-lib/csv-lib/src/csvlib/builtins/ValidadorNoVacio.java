@@ -8,7 +8,6 @@ import csvlib.modelo.TablaCSV;
  * Validador que comprueba que ninguna celda esté vacía en las columnas
  * indicadas.
  *
- * <p><b>OCP:</b> extensión añadida sin modificar la librería.</p>
  */
 public class ValidadorNoVacio implements ValidadorCSV {
 

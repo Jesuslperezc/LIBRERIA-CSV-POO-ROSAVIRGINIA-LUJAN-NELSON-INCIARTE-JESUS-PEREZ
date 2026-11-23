@@ -12,15 +12,6 @@ import java.util.function.Predicate;
  * Representa un archivo CSV cargado en memoria: una lista de encabezados
  * y una lista de filas, todo como String (comportamiento por defecto del
  * enunciado).
- *
- * Responsabilidad (SRP): solo modelar los datos y las operaciones básicas
- * de estructura que pide el enunciado:
- *   - quitar o agregar filas
- *   - quitar o agregar columnas
- *   - leer y escribir celdas
- * No lee archivos, no imprime, no valida, no transforma: esas
- * responsabilidades están en el paquete {@code nucleo} y en el paquete
- * {@code extensiones}.
  */
 public final class TablaCSV {
 

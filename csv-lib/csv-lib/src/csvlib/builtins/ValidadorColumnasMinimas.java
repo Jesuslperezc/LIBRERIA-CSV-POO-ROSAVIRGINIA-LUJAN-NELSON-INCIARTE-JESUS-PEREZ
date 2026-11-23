@@ -8,8 +8,6 @@ import csvlib.modelo.TablaCSV;
  * Validador que comprueba que la tabla tenga al menos un número mínimo de
  * columnas.
  *
- * <p><b>OCP:</b> extensión añadida sin tocar el código base de la librería;
- * implementa {@link ValidadorCSV} y se registra en la Tuberia.</p>
  */
 public class ValidadorColumnasMinimas implements ValidadorCSV {
 

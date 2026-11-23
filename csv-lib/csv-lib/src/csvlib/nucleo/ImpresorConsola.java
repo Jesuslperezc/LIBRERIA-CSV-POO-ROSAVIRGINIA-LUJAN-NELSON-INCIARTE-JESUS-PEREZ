@@ -9,16 +9,6 @@ import java.util.List;
 /**
  * Implementación por defecto de {@link ImpresorTabla} que imprime la tabla
  * en consola usando un formato de columnas alineadas con caracteres ASCII.
- *
- * <p><b>SRP:</b> solo se ocupa de la presentación en consola; no modifica la
- * tabla ni conoce el origen de los datos.</p>
- *
- * <p><b>OCP:</b> si se desea otro formato (coloreado, HTML, Markdown) se crea
- * otra implementación de {@link ImpresorTabla} sin tocar esta clase.</p>
- *
- * <p><b>DIP:</b> el destino de salida ({@link PrintStream}) se inyecta por
- * constructor, permitiendo dirigir la salida a {@code System.out},
- * {@code System.err} o un {@code PrintStream} sobre archivo.</p>
  */
 public class ImpresorConsola implements ImpresorTabla {
 

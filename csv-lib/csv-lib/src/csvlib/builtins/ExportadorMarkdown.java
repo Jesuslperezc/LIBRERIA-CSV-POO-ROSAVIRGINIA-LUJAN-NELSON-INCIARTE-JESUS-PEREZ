@@ -9,10 +9,6 @@ import java.util.List;
 /**
  * Exportador que devuelve la tabla como una tabla Markdown.
  *
- * <p><b>OCP:</b> nueva extensión sin tocar la librería.</p>
- *
- * <p><b>ISP:</b> implementa solo {@link ExportadorTabla}; no depende de
- * filtros, transformadores ni validadores.</p>
  */
 public class ExportadorMarkdown implements ExportadorTabla {
 

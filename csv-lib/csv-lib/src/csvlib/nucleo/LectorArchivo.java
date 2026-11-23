@@ -12,18 +12,7 @@ import java.util.List;
 
 /**
  * Implementación por defecto de {@link LectorCSV}.
- *
- * <p><b>SRP:</b> esta clase solo sabe parsear archivos CSV planos con
- * encabezado en la primera línea y separador configurable (coma por defecto).
- * No valida reglas de negocio, no transforma celdas, no imprime.</p>
- *
- * <p><b>OCP:</b> el separador es configurable en el constructor; si se
- * requiere un parser más complejo se crea otra implementación de
- * {@link LectorCSV} sin modificar esta clase.</p>
- *
- * <p><b>LSP:</b> cualquier sustituto de {@code LectorArchivo} que respete el
- * contrato {@link LectorCSV#leer(String)} puede usarse en su lugar sin
- * romper al cliente.</p>
+
  */
 public class LectorArchivo implements LectorCSV {
 
